@@ -228,12 +228,19 @@ class MODNet(nn.Module):
         if self.backbone_pretrained:
             self.backbone.load_pretrained_ckpt()                
 
-    def forward(self, img, inference):
+    def forward(self, img, inference=True, pred='matte'):
         pred_semantic, lr8x, [enc2x, enc4x] = self.lr_branch(img, inference)
         pred_detail, hr2x = self.hr_branch(img, enc2x, enc4x, lr8x, inference)
         pred_matte = self.f_branch(img, lr8x, hr2x)
-
-        return pred_semantic, pred_detail, pred_matte
+        
+        if pred == 'semantic':
+            return pred_semantic
+        elif pred == 'detail':
+            return pred_detail
+        elif pred == 'matte':
+            return pred_matte
+        else:
+            return pred_semantic, pred_detail, pred_matte
     
     def freeze_norm(self):
         norm_types = [nn.BatchNorm2d, nn.InstanceNorm2d]
